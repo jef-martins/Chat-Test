@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <title>Socket.IO chat</title>
+    <style>
+      body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+      #form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
+      #input { border: none; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem; }
+      #input:focus { outline: none; }
+      #form > button { background: #333; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; }
+
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      .text1 {
+        margin-left: 0%;
+        width: 20%;
+        padding: 20px;
+        background-color: coral;
+        color: white;
+        font-size: 20px;
+      }
+      .text2 {
+        margin-left: 78%;
+        width: 20%;
+        padding: 20px;
+        background-color: gray;
+        color: white;
+        font-size: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+    <ul id="messages"></ul>
+    <form id="form" action="">
+      <input id="input" autocomplete="off" />
+      <button>Send</button>
+    </form>
+    </div>
+  </body>
+  <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        let messages = document.getElementById('messages');
+        let form = document.getElementById('form');
+        let input = document.getElementById('input');
+        let conectou = true;
+        let idAtual;
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (input.value) {
+                if(conectou){
+                    socket.emit('sendNickname', input.value);
+                    conectou = false
+                }
+                else{
+                    socket.emit('chat message', input.value);
+                }
+                input.value = '';
+            }
+        });
+        socket.on('sendNickname', function(id) {
+            idAtual = id;
+        });
+        
+        socket.on('chat message', function(msg, id, users) {
+            let item = document.createElement('li');
+            let user;
+
+            if(idAtual == id){
+              item.classList.add("text1");
+              user = users
+            }else{
+              item.classList.add("text2");
+              user = users
+            }
+
+            item.textContent = user+': '+msg;
+            messages.appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+        });
+    </script>
+</html>
